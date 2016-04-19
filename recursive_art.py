@@ -1,5 +1,5 @@
 """
-RECURSIVE ART CODE 02-16-16.  DOES NOT NEED INPUTS. OUTPUT IS A RANDOMLY
+RECURSIVE ART CODE 04-19-16.  DOES NOT NEED INPUTS. OUTPUT IS A RANDOMLY
 GENERATED IMAGE.
 
 @author: REBECCA PATTERSON
@@ -27,63 +27,48 @@ def build_random_function(min_depth, max_depth):
         new level.
     """
     #all possible functions
-    functions= ["x", "y", "cos_pi", "sin_pi", "squared", "cubed", "prod", "avg"]
+    functions= {"x": lambda x,y: x,
+                "y": lambda x,y: y,
+                "cos_pi": lambda x: math.cos(math.pi*x),
+                "sin_pi": lambda x: math.sin(math.pi*x),
+                "squared": lambda x: x**2,
+                "cubed": lambda x: x**3,
+                "prod": lambda a,b: a*b,
+                "avg": lambda a,b: (a+b)/2 }
 
-    if max_depth==1:   
-    #if there can only be 1 more level, give block with zero arguments
-    #and no recursion
-        index= random.randint(0, 1)
-        return [functions[index]]
+    #connect function names to the number of arguments
+    fn_args= {"x":0, "y":0, "cos_pi":1, "sin_pi":1, "squared":1, "cubed":1, "prod":2, "avg":2}
+    #just look at the number of arguments
+    fn_names= fn_args.keys()
+
+    if max_depth==1:
+    #if there can only be 1 more level, only look at function names for the 
+    # functions with zero arguments and have no recursion
+        fn_names= [fn for fn in fn_names if fn_args[fn]==0]
+
     elif min_depth>0:
-    #if there is more than one level before minimum depth, give a 
-    #building block that takes arguements that will recurse the function
-        index= random.randint(2, 7)
-        if index<6:             #one arguement
-            return[functions[index], build_random_function(min_depth-1, max_depth-1)]       
-        else:                   #two arguments
-            return[functions[index], build_random_function(min_depth-1, max_depth-1),build_random_function(min_depth-1, max_depth-1)]
+    #if there is more than one level before minimum depth, only look at 
+    # functions that take arguements and will recurse the function
+        fn_names= [fn for fn in fn_names if fn_args[fn]>0]
+
+    #randomly choose one of the function names specified through the if statements
+    fn_name= random.choice(fn_names)
+    #connect the function name to the actual function
+    function= functions[fn_name]    
+
+    #if the chosen function has no arguments, end recursion
+    if fn_args[fn_name]==0:
+        return function
+    #if it has one argument
+    elif fn_args[fn_name]==1:
+        args= [build_random_function(min_depth-1, max_depth-1)]
+    #otherwise it needs two arguments
     else:
-    #if within the bounds of acceptable levels, can raturn any block
-        index= random.randint(0, 7)
-        if index<2:             #zero argument
-            return[functions[index]]
-        elif 2<=index<6:        #one arguement
-            return[functions[index], build_random_function(min_depth-1, max_depth-1)]
-        else:                   #two arguments
-            return[functions[index], build_random_function(min_depth-1, max_depth-1), build_random_function(min_depth-1, max_depth-1)]
+        args= [build_random_function(min_depth-1, max_depth-1),
+               build_random_function(min_depth-1, max_depth-1)]
+    #recurse with number of arguments specified in if statements    
+    return lambda x,y: function(*[arg(x,y) for arg in args])  
 
-def evaluate_random_function(f, x, y):
-    """ Evaluate the random function f with inputs x,y
-
-        f: the function to evaluate
-        x: the value of x to be used to evaluate the function
-        y: the value of y to be used to evaluate the function
-        returns: the function value
-
-        >>> evaluate_random_function(["x"],-0.5, 0.75)
-        -0.5
-        >>> evaluate_random_function(["y"],0.1,0.02)
-        0.02
-    """
-    #base case
-    if f[0]== "x":
-        return x
-    elif f[0]== "y":
-        return y
-    #evaluate with specified action and arguements. will recurse until
-    #it reaches base case and entire function has been evaluated.     
-    elif f[0]== "cos_pi":  
-        return math.cos(math.pi*evaluate_random_function(f[1], x,y))
-    elif f[0]== "sin_pi":
-        return math.sin(math.pi*evaluate_random_function(f[1], x,y))
-    elif f[0]== "squared":
-        return (evaluate_random_function(f[1],x,y))**2
-    elif f[0]== "cubed":
-        return (evaluate_random_function(f[1],x,y))**3
-    elif f[0]== "prod":
-        return (evaluate_random_function(f[1],x,y))* (evaluate_random_function(f[2],x,y))
-    elif f[0]== "avg":
-        return 0.5* (evaluate_random_function(f[1],x,y) + evaluate_random_function(f[2],x,y))
 
 def remap_interval(val,
                    input_interval_start,
@@ -181,11 +166,10 @@ def generate_art(filename, x_size=350, y_size=350):
             x = remap_interval(i, 0, x_size, -1, 1)
             y = remap_interval(j, 0, y_size, -1, 1)
             pixels[i, j] = (
-                    color_map(evaluate_random_function(red_function, x, y)),
-                    color_map(evaluate_random_function(green_function, x, y)),
-                    color_map(evaluate_random_function(blue_function, x, y))
+                    color_map(red_function(x, y)),
+                    color_map(green_function(x, y)),
+                    color_map(blue_function(x, y))
                     )
-
     im.save(filename)
 
 #no new doctest were added because of reliance on random.randint.
@@ -194,7 +178,7 @@ if __name__ == '__main__':
 #    doctest.testmod()
 
     # Create some computational art!
-    generate_art("myart32.png")
+    generate_art("myart38.png")
 
     # Test that PIL is installed correctly
     # test_image("noise.png")
