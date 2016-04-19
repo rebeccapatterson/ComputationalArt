@@ -6,14 +6,13 @@ GENERATED IMAGE.
 """
 
 import math
-
 import random
 from PIL import Image
 
 
 def build_random_function(min_depth, max_depth):
-	#no doctest created because the function uses random.randint, so outputs
-	#cannot be predicted or tested.
+    #no doctest created because the function uses random.randint, so outputs
+    #cannot be predicted or tested.
     """ Builds a nested list that represents a function within specified 
         levels using internally defined building blocks.
 
@@ -27,56 +26,31 @@ def build_random_function(min_depth, max_depth):
         Where each instance of arg recurses the function and creates a
         new level.
     """
+    #all possible functions
+    functions= ["x", "y", "cos_pi", "sin_pi", "squared", "cubed", "prod", "avg"]
+
     if max_depth==1:   
-    #if there can only be 1 more level, give block with zero arguments and
-    #has no recursion
-        random_number= random.randint(0, 1)
-    #zero arguments ["x", "y"]
-        if random_number==0:
-            return ["x"]
-        if random_number==1:
-            return ["y"]
+    #if there can only be 1 more level, give block with zero arguments
+    #and no recursion
+        index= random.randint(0, 1)
+        return [functions[index]]
     elif min_depth>0:
-    #if there is more than one level left before hitting minimum, give a 
+    #if there is more than one level before minimum depth, give a 
     #building block that takes arguements that will recurse the function
-    	random_number= random.randint(0, 5)
-        #one arguement
-        if random_number==0:
-            return ["cos_pi", build_random_function(min_depth-1, max_depth-1)]
-        if random_number==1:
-            return ["sin_pi", build_random_function(min_depth-1, max_depth-1)]
-        if random_number==2:
-        	return ["squared", build_random_function(min_depth-1, max_depth-1)]
-        if random_number==3: 
-            return ["cubed", build_random_function(min_depth-1, max_depth-1)]        
-        # two_arguements
-        if random_number==4:
-            return ["prod", build_random_function(min_depth-1, max_depth-1), build_random_function(min_depth-1, max_depth-1)]
-        if random_number==5:
-            return ["avg", build_random_function(min_depth-1, max_depth-1), build_random_function(min_depth-1, max_depth-1)]
+        index= random.randint(2, 7)
+        if index<6:             #one arguement
+            return[functions[index], build_random_function(min_depth-1, max_depth-1)]       
+        else:                   #two arguments
+            return[functions[index], build_random_function(min_depth-1, max_depth-1),build_random_function(min_depth-1, max_depth-1)]
     else:
     #if within the bounds of acceptable levels, can raturn any block
-    	random_number= random.randint(0, 5)
-    	#no arguments, will stop recursion
-        if random_number==0:
-            return ["x"]
-        if random_number==1:
-        	return ["y"] 
-        #one arguements, will continue with recursion   	
-        if random_number==2:
-            return ["cos_pi", build_random_function(min_depth-1, max_depth-1)]
-        if random_number==3:
-            return ["sin_pi", build_random_function(min_depth-1, max_depth-1)]
-        if random_number==4:
-        	return ["squared", build_random_function(min_depth-1, max_depth-1)]
-        if random_number==5:        
-            return ["cubed", build_random_function(min_depth-1, max_depth-1)]        
-        #two arguements, will continue with recursion   
-        if random_number==6:
-            return ["prod", build_random_function(min_depth-1, max_depth-1), build_random_function(min_depth-1, max_depth-1)]
-        if random_number==7:
-            return ["avg", build_random_function(min_depth-1, max_depth-1), build_random_function(min_depth-1, max_depth-1)]
- 
+        index= random.randint(0, 7)
+        if index<2:             #zero argument
+            return[functions[index]]
+        elif 2<=index<6:        #one arguement
+            return[functions[index], build_random_function(min_depth-1, max_depth-1)]
+        else:                   #two arguments
+            return[functions[index], build_random_function(min_depth-1, max_depth-1), build_random_function(min_depth-1, max_depth-1)]
 
 def evaluate_random_function(f, x, y):
     """ Evaluate the random function f with inputs x,y
@@ -94,23 +68,22 @@ def evaluate_random_function(f, x, y):
     #base case
     if f[0]== "x":
         return x
-    if f[0]== "y":
+    elif f[0]== "y":
         return y
     #evaluate with specified action and arguements. will recurse until
-    #it reached base case and entire function has been evaluated.     
-    if f[0]== "cos_pi":
-    	return math.cos(math.pi*evaluate_random_function(f[1], x,y))
-    if f[0]== "sin_pi":
-    	return math.sin(math.pi*evaluate_random_function(f[1], x,y))
-    if f[0]== "squared":
-    	return (evaluate_random_function(f[1],x,y))**2
-    if f[0]== "cubed":
+    #it reaches base case and entire function has been evaluated.     
+    elif f[0]== "cos_pi":  
+        return math.cos(math.pi*evaluate_random_function(f[1], x,y))
+    elif f[0]== "sin_pi":
+        return math.sin(math.pi*evaluate_random_function(f[1], x,y))
+    elif f[0]== "squared":
+        return (evaluate_random_function(f[1],x,y))**2
+    elif f[0]== "cubed":
         return (evaluate_random_function(f[1],x,y))**3
-    if f[0]== "prod":
-    	return (evaluate_random_function(f[1],x,y))* (evaluate_random_function(f[2],x,y))
-    if f[0]== "avg":
+    elif f[0]== "prod":
+        return (evaluate_random_function(f[1],x,y))* (evaluate_random_function(f[2],x,y))
+    elif f[0]== "avg":
         return 0.5* (evaluate_random_function(f[1],x,y) + evaluate_random_function(f[2],x,y))
-
 
 def remap_interval(val,
                    input_interval_start,
@@ -141,7 +114,7 @@ def remap_interval(val,
     """
     interval_1= input_interval_end- input_interval_start
     interval_2= output_interval_end- output_interval_start
-    value_1= float((input_interval_end-val))/interval_1
+    value_1= float((val-input_interval_start))/interval_1
     value_2= value_1*interval_2+ output_interval_start
     return value_2
 
@@ -202,6 +175,7 @@ def generate_art(filename, x_size=350, y_size=350):
     # Create image and loop over all pixels
     im = Image.new("RGB", (x_size, y_size))
     pixels = im.load()
+
     for i in range(x_size):
         for j in range(y_size):
             x = remap_interval(i, 0, x_size, -1, 1)
@@ -214,14 +188,13 @@ def generate_art(filename, x_size=350, y_size=350):
 
     im.save(filename)
 
-
 #no new doctest were added because of reliance on random.randint.
 if __name__ == '__main__':
     import doctest
 #    doctest.testmod()
 
     # Create some computational art!
-    generate_art("myart11.png")
+    generate_art("myart32.png")
 
     # Test that PIL is installed correctly
     # test_image("noise.png")
